@@ -1,8 +1,6 @@
-import random
-import os
 import pygame
 from pygame.locals import *
-from PIL import Image
+import os
 
 # Initialize pygame
 pygame.init()
@@ -21,58 +19,29 @@ pygame.init()
 # Create a clock object to control frame rate
 clock = pygame.time.Clock()
 
-# Klasse für eine Karte definieren
-class Karte:
-    def __init__(self, name, bild, wert):
-        self.name = name
-        self.bild = bild
-        self.wert = wert
+# Load card images
+karten_ordner = "Karten"
+karten_dateien = [file for file in os.listdir(karten_ordner) if file.endswith(".png")]
+karten_bilder = [pygame.image.load(os.path.join(karten_ordner, datei)) for datei in karten_dateien]
 
-class SpielerInfo:
-    def __init__(self, name, hand, kombiniertes_bild=None):
-        self.name = name
-        self.hand = hand
-        self.kombiniertes_bild = kombiniertes_bild
-
-
-def zeige_spielerkarten(spieler_info):
-    spieler_name = spieler_info.name
-    spieler_hand = spieler_info.hand
-    spieler_kombiniertes_bild = spieler_info.kombiniertes_bild
-
-
-def create_combined_image(cards, winkel_list, scale=1.0):
-    card_width = cards[0].bild.width
-    card_height = cards[0].bild.height
-    overlap = int(card_width * 0.3 * scale)  # Überlappungsabstand (30% der Kartenbreite)
-    combined_width = int(card_width * len(cards) - (len(cards) - 1) * overlap * scale)  # Anpassung der Breite
-    combined_height = int(card_height * scale)  # Anpassung der Höhe
-    combined_image = Image.new("RGBA", (combined_width, combined_height))  # Transparenter Hintergrund
-
-    pos_x = 0  # Initialisiere die X-Position
-
-    for i, (card, winkel) in enumerate(zip(cards, winkel_list)):
-        # Rotiere das Bild im festen Winkel um den Ankerpunkt und skaliere es
-        rotated_card = card.bild.rotate(winkel, resample=Image.BICUBIC, expand=True).resize(
-            (int(card_width * scale), int(card_height * scale)), Image.LANCZOS
-        )
-
-        # Berechne die Position des Bildes im kombinierten Bild
-        pos_y = combined_height - int(rotated_card.height * scale)  # Am unteren Rand zentrieren
-
-        # Kombiniere das rotierte und skalierte Bild mit dem kombinierten Bild unter Beibehaltung des Alphakanals
-        combined_image.alpha_composite(rotated_card, (pos_x, pos_y))
-
-        # Aktualisiere die X-Position für die nächste Karte unter Berücksichtigung der Überlappung
-        pos_x += int(card_width * scale) - overlap
-
-    return combined_image
 
 # 1. Überprüfung der Benutzereingabe für die Anzahl der Spieler in der Lobby
 anzahl_spieler = int(input("Geben Sie die Anzahl der Spieler ein (maximal 7): "))
 if anzahl_spieler < 1 or anzahl_spieler > 7:
     print("Ungültige Anzahl der Spieler!")
     exit()
+
+class SpielerInfo:
+    def __init__(self, name, hand, kombiniertes_bild):
+        self.name = name
+        self.hand = hand
+        self.kombiniertes_bild = kombiniertes_bild
+
+class Karte:
+    def __init__(self, name, bild, wert):
+        self.name = name
+        self.bild = bild
+        self.wert = wert
 
 # 2. Eingabe der Spielernamen und Erstellen der Spielerliste
 spieler = []
@@ -113,13 +82,10 @@ karten_werte = {
 }
 
 for datei in karten_dateien:
-    bild = Image.open(os.path.join(karten_ordner, datei)).convert("RGBA")
+    bild = pygame.image.load(os.path.join(karten_ordner, datei)).convert_alpha()
     name = datei.split(".")[0]
-    wert = karten_werte.get(name, 0)  # Wenn der Karte kein Wert zugewiesen wurde, wird 0 als Standardwert verwendet.
+    wert = karten_werte.get(name, 0)
     karten.append(Karte(name, bild, wert))
-
-# 5. Karten mischen
-random.shuffle(karten)
 
 # 6. Karten gleichmäßig auf die Spieler verteilen
 anzahl_karten_pro_spieler = len(karten) // anzahl_spieler
@@ -164,23 +130,54 @@ for spieler_info in spieler:
     scale_factor = 0.3  # Verkleinern der kombinierten Bilder auf die Hälfte ihrer ursprünglichen Größe
 
     print(f"\nKarten für {hand_name}:")
-    kartenbilder_mit_winkeln = [(karte.bild.rotate(winkel), winkel) for karte, winkel in zip(hand, hand_winkel_list)]
+    kartenbilder_mit_winkeln = [(pygame.transform.rotate(karte.bild, winkel), winkel) for karte, winkel in zip(hand, hand_winkel_list)]
 
-    combined_image = create_combined_image(hand, hand_winkel_list, scale_factor)
-    spieler_info.kombiniertes_bild = combined_image
+# ... (Previous code)
 
+def create_combined_image(images_with_angles, scale_factor):
+    total_width = 0
+    max_height = 0
 
-    spieler_canvas = Canvas(spieler_fenster)
-    spieler_canvas.pack()
+    for image, _ in images_with_angles:
+        total_width += int(image.get_width() * scale_factor)
+        max_height = max(max_height, int(image.get_height() * scale_factor))
 
-    verschiebbare_bilder = []
-    x_position = 10
-    for kartenbild, winkel in kartenbilder_mit_winkeln:
-        scaled_image = kartenbild.resize((int(kartenbild.width * scale_factor), int(kartenbild.height * scale_factor)), Image.LANCZOS)
-        tk_image = ImageTk.PhotoImage(scaled_image)
-        bild = VerschiebbaresBild(spieler_canvas, tk_image, x_position, 10)
-        verschiebbare_bilder.append(bild)
-        x_position += scaled_image.width + 10  # Abstand zwischen den Bildern
+    combined_image = pygame.Surface((total_width, max_height), pygame.SRCALPHA)
+
+    x_offset = 0
+    for image, angle in images_with_angles:
+        rotated_image = pygame.transform.rotozoom(image, angle, scale_factor)
+        combined_image.blit(rotated_image, (x_offset, 0))
+        x_offset += int(image.get_width() * scale_factor)
+
+    return combined_image
+
+# Create a combined image for each player's hand
+for spieler_info in spieler:
+    hand = spieler_info.hand
+    hand_name = spieler_info.name
+    hand_winkel_list = [20, 8, -8, -10]
+    scale_factor = 0.3
+
+    print(f"\nKarten für {hand_name}:")
+    kartenbilder_mit_winkeln = [(pygame.transform.rotate(karte.bild, winkel), winkel) for karte, winkel in zip(hand, hand_winkel_list)]
+
+    combined_image = create_combined_image(kartenbilder_mit_winkeln, scale_factor)
+    spieler_info.kombiniertes_bild = combined_image  # Store the combined image in the SpielerInfo object
+
+# Display the player hands and combined images
+for spieler_info in spieler:
+    print(f"\nSpieler: {spieler_info.name}")
+    print("Karten:")
+    for karte in spieler_info.hand:
+        print(f" - {karte.name}")
+    
+    # Display the combined image for the player's hand
+    combined_image = spieler_info.kombiniertes_bild
+    x_pos = 0  # Starting position for the combined image
+    y_pos = SCREEN_HEIGHT - combined_image.get_height()  # Position from the bottom of the screen
+    screen.blit(combined_image, (x_pos, y_pos))
+    x_pos += combined_image.get_width()  # Update the position for the next player
 
 def make_transparent(image):
     if image.mode == 'RGBA':  # Überprüfe, ob das Bild bereits einen Alphakanal hat
@@ -192,10 +189,6 @@ def make_transparent(image):
 
     return image
 
-# 10. Zeige die GUI für jeden Spieler an
-for spieler_info in spieler:
-    zeige_spielerkarten(spieler_info)
-
 # Main game loop
 running = True
 while running:
@@ -205,6 +198,14 @@ while running:
 
     # Clear the screen
     screen.fill((255, 255, 255))
+
+    # Display the player hands and combined images
+    x_pos = 0  # Starting position for the combined image
+    for spieler_info in spieler:
+        combined_image = spieler_info.kombiniertes_bild
+        y_pos = SCREEN_HEIGHT - combined_image.get_height()  # Position from the bottom of the screen
+        screen.blit(combined_image, (x_pos, y_pos))
+        x_pos += combined_image.get_width()  # Update the position for the next player
 
     # ... (Rest of the code for displaying player hands and combined images)
     
