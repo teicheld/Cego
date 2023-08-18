@@ -1,0 +1,24 @@
+
+
+# elemtente
+
+Spiel()
+    Runde
+
+Deck()
+    erstellen
+    mischen
+    
+Karte()
+    bild
+    value
+
+Spieler()
+    AnzahlAnKarten
+    Karten [] = anzahlAnKarten * Karte()
+    def zeigeHandKarten
+    def zieheKarte
+    def werfeKarteWeg
+    
+    
+ 
