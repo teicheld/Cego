@@ -9,20 +9,42 @@ local handPosX = nil
 
 function Player()
 	cards = {}
-	function drawCard()
+	function drawMaxCards()
+		nowAmount = nil
+		if next(myTable) == nil then
+			nowAmount = 0
+		else
+			nowAmount = #cards
+		end
 		
+		table.insert(cards, drawCard())
+	function drawCard()
+		return card	
 	end
 	function throwCard(pos)
 
 	end
 end
 
-function Karte()
+function Card()
 
 end
 
-function Deck()
+function getDeck()
+	deck = {}
+	--for file = 1
+	return deck
+end
 
+function loadImages()
+	for i = 1, 22 do
+		if (i<10) then
+			images[i] = love.graphics.newImage("img/karten/0"..i..".png")
+		else
+			images[i] = love.graphics.newImage("img/karten/"..i..".png")
+		end
+	end
+	return images
 end
 
 
@@ -37,18 +59,12 @@ function getXhandCards(distance)
 end
 
 function love.load()
-	for i = 1, 22 do
-		if (i<10) then
-			images[i] = love.graphics.newImage("img/karten/0"..i..".png")
-		else
-			images[i] = love.graphics.newImage("img/karten/"..i..".png")
-		end
-	end
 	imageWidth = images[1]:getWidth()
 	imageHeight = images[1]:getHeight()
 	imageXcenter = imageWidth / 2
 	imageYbutton = imageHeight
 	handPosX = getXhandCards(25)
+	images = loadImages()
 end
 
 function love.draw()
