@@ -1,39 +1,102 @@
-local images = {}
-local x = 300
-local y = 400
-local imageWidth = nil
-local imageHeight = nil
-local imageXcenter = nil
-local imageYcenter = nil
-local handPosX = nil
+local config = require("config")
 
-function Player()
-	cards = {}
-	function drawMaxCards()
-		nowAmount = nil
-		if next(myTable) == nil then
-			nowAmount = 0
+function shuffleTable(tbl)
+    local randomIndex, tmp
+    for currentIndex = #tbl, 2, -1 do
+        randomIndex = math.random(currentIndex)
+        tmp = tbl[currentIndex]
+        tbl[currentIndex] = tbl[randomIndex]
+        tbl[randomIndex] = tmp
+    end
+end
+
+function loadCard(value)
+	function getFileName(value)
+		if (value<10) then 
+			path = "img/karten/0"..value..".png"
 		else
-			nowAmount = #cards
+			path = "img/karten/"..value..".png"
 		end
-		
-		table.insert(cards, drawCard())
-	function drawCard()
-		return card	
+		return path
 	end
-	function throwCard(pos)
-
-	end
+	imgFile = getFileName(value)
+	img = "love.graphics.newImage("..imgFile..")"
+	return {
+		value = value,
+		img = img
+	}
 end
 
-function Card()
+function getDeck(amount)
+	cards = {}
+	--check if all files are there
+	for i = 1, amount do
+		newCard = loadCard(i)
+		table.insert(cards, newCard)
+	end
+	shuffleTable(cards)
+	return {
+		cards = cards,
+		pop = function(self) 
+			table.remove(self.cards, #self.cards)
+			return self.cards[#cards]
+		end
+	}
+end
+
+function Spieler()
+	karten = {}
+	return {
+		zeigeKarten = function(self)
+			print("alle Spieler sehen deine Karten(2implemend)")
+			for i = 1, #karten do
+				print("Wert: "..karten[i].value)
+				print("Bild: "..karten[i].img)
+			end
+		end,
+		zieheKarte = function(self)
+			newCard = deck:pop()
+			table.insert(karten, newCard)
+		end,
+		werfeKarteWeg = function(self, pos)
+			table.remove(karten, pos)
+		end
+	}
 
 end
 
-function getDeck()
-	deck = {}
-	--for file = 1
-	return deck
+function game_Field()
+	local cardsOnField = {}
+	local fieldPos = {
+		{x = 100, 
+	}
+	return {
+		showCards = function(self) 
+			for i = 1, #cardsOnField do
+				print(cardsOnField[i]["value"])
+			end
+		end,
+		putCardOnField = function(self, card)
+			table.insert(cardsOnField, card)
+		end,
+		displayField = function(self)
+			if not (0 == #cardsOnField) then
+				for i = 1, #cardsOnField do
+					love.graphics.draw(cardsOnField[i], fieldPos[i]["x"], fieldPos[i]["y"], imageScaleX, imageScaleY)
+				end
+			end
+
+		end
+	}
+
+end
+
+function displayField()
+	amountOfPlayers = #players
+	for i = 1, players do
+		love.graphics.draw(images[i], handPosX[i], yButton, rotationHand, imageScaleX, imageScaleY, imageXcenter, imageYbutton)
+		rotationHand = rotationHand + rotationHandNeighborDifference
+	end
 end
 
 function loadImages()
@@ -47,11 +110,21 @@ function loadImages()
 	return images
 end
 
-
 function getXhandCards(distance)
 	-- fills an table of 4 elements and returns it
 	local xPos = {}
-	xPos[1] = -1 * (distance /2 + distance) + x
+	xPos[1] = -1 * (distance /2 + distance) + xScreenMiddle
+	for i = 2, 4 do
+		xPos[i] = xPos[i-1] + distance
+	end
+	return xPos
+end
+
+function getXfieldCards(distance)
+	-- fills an table of 4 elements and returns it
+	local xPos = {}
+	local yPos = {}
+	xPos[1] = -1 * (distance /2 + distance) + xScreenMiddle
 	for i = 2, 4 do
 		xPos[i] = xPos[i-1] + distance
 	end
@@ -59,28 +132,76 @@ function getXhandCards(distance)
 end
 
 function love.load()
-	imageWidth = images[1]:getWidth()
-	imageHeight = images[1]:getHeight()
-	imageXcenter = imageWidth / 2
-	imageYbutton = imageHeight
-	handPosX = getXhandCards(25)
-	images = loadImages()
+	----------------- game settings  -----------------------------------------------------
+    	love.window.setMode(config.windowWidth, config.windowHeight, config.windowFlags)    --
+	--------------------------------------------------------------------------------------
+	----------------- image printing -----------------
+	initRotationHand = math.rad(-45)
+	rotationHandNeighborDifference = math.rad(30)
+	imageScaleX = 0.3
+	imageScaleY = imageScaleX
+	xScreenMiddle = love.graphics.getWidth() / 2	--
+	yButton = love.graphics.getHeight()		--
+	images = {}					--
+	images = loadImages()				--
+	imageXcenter = images[1]:getWidth() / 2		--
+	imageYbutton = images[1]:getHeight()		--
+	imageWidth = images[1]:getWidth() 		--
+	imageHeight = images[1]:getHeight()		--
+	handPosX = getXhandCards(25)			--
+	fieldPosX = getXfieldCards(25)			--
+                                                        --
+	--------------------------------------------------
+	-------------------- game objects ----------------
+	deck = getDeck(22)				--
+        board = game_Field                              --
+	players = {}                                    --
+        patrick = Spieler()                             --
+	table.insert(players, patrick)                  --
+                                                        --
+	--------------------------------------------------
+	
+end
+
+function love.update(dt)
+
 end
 
 function love.draw()
 	displayHand()
 end
 
+--deck = getDeck(22)
+--patrick = Spieler()
+--
+--print("patrick zieht eine karte")
+--patrick:zieheKarte()
+--print("patrick zieht eine karte")
+--patrick:zieheKarte()
+--print("patrick zeigt seine karten")
+--patrick:zeigeKarten()
+--print("patrick wirft seine letzte karte weg")
+--patrick:werfeKarteWeg()
+--print("patrick zeigt seine karten")
+--patrick:zeigeKarten()
+--
+--deckCards = getDeck(22)
+--print("amount of cards in the deck: "..#deckCards.cards)
+--drawnCard = deckCards:pop()
+--print("imgage: "..drawnCard.img)
+--print("amount of cards in the deck: "..#deckCards.cards)
+--drawnCard = deckCards:pop()
+--print("imgage: "..drawnCard.img)
+
 function displayHand()
-	scaleX = 0.3
-	scaleY = scaleX
-	rotation = math.rad(-45)
+	local rotationHand = initRotationHand
 	for i = 1, 4 do
-		print(rotation)
-		love.graphics.draw(images[i], handPosX[i], y, rotation, scaleX, scaleY, imageXcenter, imageYbutton)
-		rotation = rotation + math.rad(30)
+		love.graphics.draw(images[i], handPosX[i], yButton, rotationHand, imageScaleX, imageScaleY, imageXcenter, imageYbutton)
+		rotationHand = rotationHand + rotationHandNeighborDifference
+		print(rotationHand)
 	end
 end
+
 
 function love.keypressed(key)
    if key == "escape" then

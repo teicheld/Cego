@@ -45,7 +45,7 @@ end
 function Spieler()
 	karten = {}
 	return {
-		zeigeHandKarten = function(self)
+		zeigeKarten = function(self)
 			print("alle Spieler sehen deine Karten(2implemend)")
 			for i = 1, #karten do
 				print("Wert: "..karten[i].value)
@@ -63,24 +63,19 @@ function Spieler()
 
 end
 
-function foo()
-	print(deck:pop())
-end
-
-local deck = getDeck(22)
-local patrick = Spieler()
-
-print("patrick zieht eine karte")
-foo()
+--deck = getDeck(22)
+--patrick = Spieler()
+--
+--print("patrick zieht eine karte")
 --patrick:zieheKarte()
 --print("patrick zieht eine karte")
 --patrick:zieheKarte()
 --print("patrick zeigt seine karten")
---partrick:zeigeKarten()
---print("patrick wirft eine karte weg")
+--patrick:zeigeKarten()
+--print("patrick wirft seine letzte karte weg")
 --patrick:werfeKarteWeg()
 --print("patrick zeigt seine karten")
---partrick:zeigeKarten()
+--patrick:zeigeKarten()
 --
 --deckCards = getDeck(22)
 --print("amount of cards in the deck: "..#deckCards.cards)

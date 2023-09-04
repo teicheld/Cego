@@ -2,8 +2,12 @@
 
 # elemtente
 
-Spiel()
+game_Field()    
     Runde
+    cardsOnField
+    showCards()
+    putCardOnField()
+    displayField()
 
 Deck()
     erstellen
@@ -19,6 +23,7 @@ Spieler()
     def zeigeHandKarten
     def zieheKarte
     def werfeKarteWeg
+    def legeKarte
     
     
 
