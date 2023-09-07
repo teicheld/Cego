@@ -65,8 +65,12 @@ function Spieler()
 
 end
 
-function point(x, y)                                                return {
-                x = x,                                                      y = y                                               }                                                   end
+function point(x, y)
+	return {
+		x = x,
+		y = y
+	}
+end
 
 function getFieldCardPositions()
 	imageNeighbourSpacing = 50
@@ -74,20 +78,20 @@ function getFieldCardPositions()
 	return {
 		positions = function(self)
 			
-		end
-	amountOfPlayers = #players
+		end,
+		amountOfPlayers = #players
 	}
 end
 
 
 function game_Field()
 	local cardsOnField = {}
-	@2do fieldPos = {}
-fieldPos[i].y
+	--@2do fieldPos = {}
+	--fieldPos[i].y
 	return {
 		getNumberOfCardsOnBoard = function(self)
 			return #cardsOnField
-		end
+		end,
 		showCards = function(self) 
 			for i = 1, #cardsOnField do
 				print(cardsOnField[i]["value"])
