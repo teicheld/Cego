@@ -74,20 +74,24 @@ end
 
 function getFieldCardPositions()
 	imageNeighbourSpacing = 50
-	boxWidth = (imageNeighbourSpacing + imageWidth) * board:getNumberOfCardsOnBoard()
-	return {
-		positions = function(self)
-			
-		end,
-		amountOfPlayers = #players
-	}
+	numberOfCardsOnBoard = board:getNumberOfCardsOnBoard()
+	imageElementWidth = imageNeighbourSpacing + imageWidth
+	boxWidth = imageElementWidth * numberOfCardsOnBoard
+	startPosX = (screenWidth - boxWidth) / 2
+	middleTopY = (love.graphics.getHeight() / 2) + (love.graphics.getHeight() / 4)
+	love.graphics.getHeight()		--
+	positions = {}
+	for i = 1, numberOfCardsOnBoard do
+		xPos = numberOfCardsOnBoard * imageElementWidth + startPosX
+		positions[i] = point(xPos, middleTopY)
+		print("pos "..i..".x: "..positions[i].x)
+	end
+	return positions
 end
 
 
 function game_Field()
 	local cardsOnField = {}
-	--@2do fieldPos = {}
-	--fieldPos[i].y
 	return {
 		getNumberOfCardsOnBoard = function(self)
 			return #cardsOnField
@@ -160,6 +164,7 @@ function love.load()
 	imageScaleX = 0.3
 	imageScaleY = imageScaleX
 	xScreenMiddle = love.graphics.getWidth() / 2	--
+	screenWidth = love.graphics.getWidth() 
 	yButton = love.graphics.getHeight()		--
 	images = {}					--
 	images = loadImages()				--
@@ -173,12 +178,20 @@ function love.load()
 	--------------------------------------------------
 	-------------------- game objects ----------------
 	deck = getDeck(22)				--
-        board = game_Field                              --
+        board = game_Field()                            --
 	players = {}                                    --
         patrick = Spieler()                             --
 	table.insert(players, patrick)                  --
                                                         --
 	--------------------------------------------------
+	testCard = {img="someImage", value=3}
+	board:putCardOnField(testCard)
+	board:putCardOnField(testCard)
+	board:putCardOnField(testCard)
+	board:putCardOnField(testCard)
+	board:putCardOnField(testCard)
+	board:getNumberOfCardsOnBoard()
+	getFieldCardPositions()
 	
 end
 
@@ -217,7 +230,6 @@ function displayHand()
 	for i = 1, 4 do
 		love.graphics.draw(images[i], handPosX[i], yButton, rotationHand, imageScaleX, imageScaleY, imageXcenter, imageYbutton)
 		rotationHand = rotationHand + rotationHandNeighborDifference
-		print(rotationHand)
 	end
 end
 
