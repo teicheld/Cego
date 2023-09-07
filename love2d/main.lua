@@ -190,7 +190,8 @@ function love.load()
 	board:putCardOnField(testCard)
 	board:putCardOnField(testCard)
 	board:putCardOnField(testCard)
-	board:getNumberOfCardsOnBoard()
+	--board:showCards()
+	--print(board:getNumberOfCardsOnBoard())
 	getFieldCardPositions()
 	
 end
