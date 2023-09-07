@@ -65,12 +65,29 @@ function Spieler()
 
 end
 
+function point(x, y)                                                return {
+                x = x,                                                      y = y                                               }                                                   end
+
+function getFieldCardPositions()
+	imageNeighbourSpacing = 50
+	boxWidth = (imageNeighbourSpacing + imageWidth) * board:getNumberOfCardsOnBoard()
+	return {
+		positions = function(self)
+			
+		end
+	amountOfPlayers = #players
+	}
+end
+
+
 function game_Field()
 	local cardsOnField = {}
-	local fieldPos = {
-		{x = 100, 
-	}
+	@2do fieldPos = {}
+fieldPos[i].y
 	return {
+		getNumberOfCardsOnBoard = function(self)
+			return #cardsOnField
+		end
 		showCards = function(self) 
 			for i = 1, #cardsOnField do
 				print(cardsOnField[i]["value"])
@@ -82,18 +99,16 @@ function game_Field()
 		displayField = function(self)
 			if not (0 == #cardsOnField) then
 				for i = 1, #cardsOnField do
-					love.graphics.draw(cardsOnField[i], fieldPos[i]["x"], fieldPos[i]["y"], imageScaleX, imageScaleY)
+					love.graphics.draw(cardsOnField[i], fieldPos[i].x, fieldPos[i].y, imageScaleX, imageScaleY)
 				end
 			end
-
 		end
 	}
 
 end
 
 function displayField()
-	amountOfPlayers = #players
-	for i = 1, players do
+	for i = 1, #players do
 		love.graphics.draw(images[i], handPosX[i], yButton, rotationHand, imageScaleX, imageScaleY, imageXcenter, imageYbutton)
 		rotationHand = rotationHand + rotationHandNeighborDifference
 	end
