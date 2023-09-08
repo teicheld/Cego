@@ -1,5 +1,87 @@
 local config = require("config")
 
+
+function love.load()
+	----------------- game settings  -----------------------------------------------------
+    	love.window.setMode(config.windowWidth, config.windowHeight, config.windowFlags)    --
+	--------------------------------------------------------------------------------------
+	----------------- image printing -----------------
+	initRotationHand = math.rad(-45)
+	rotationHandNeighborDifference = math.rad(30)
+	xScreenMiddle = love.graphics.getWidth() / 2	--
+	screenWidth = love.graphics.getWidth() 
+	yButton = love.graphics.getHeight()		--
+	images = {}					--
+	images = loadImages()				--
+	imageXcenter = images[1]:getWidth() / 2		--
+	imageYbutton = images[1]:getHeight()		--
+	imageWidth = images[1]:getWidth() 		--
+	imageHeight = images[1]:getHeight()		--
+	handPosX = getXhandCards(25)			--
+                                                        --
+	--------------------------------------------------
+	-------------------- game objects ----------------
+	deck = getDeck(22)				--
+        board = game_Field()                            --
+	players = {}                                    --
+        patrick = Spieler()                             --
+	table.insert(players, patrick)                  --
+                                                        --
+	--------------------------------------------------
+	testCard = loadCard(2)
+	board:putCardOnField(testCard)
+	board:putCardOnField(testCard)
+	board:putCardOnField(testCard)
+	board:putCardOnField(testCard)
+	board:putCardOnField(testCard)
+	--board:showCards()
+	--print(board:getNumberOfCardsOnBoard())
+	positions = getFieldCardPositions()
+	
+end
+
+function love.update(dt)
+
+end
+
+function love.draw()
+	displayHand()
+
+	img = love.graphics.newImage("img/karten/01.png")
+	board:displayField()
+	
+end
+
+--deck = getDeck(22)
+--patrick = Spieler()
+--
+--print("patrick zieht eine karte")
+--patrick:zieheKarte()
+--print("patrick zieht eine karte")
+--patrick:zieheKarte()
+--print("patrick zeigt seine karten")
+--patrick:zeigeKarten()
+--print("patrick wirft seine letzte karte weg")
+--patrick:werfeKarteWeg()
+--print("patrick zeigt seine karten")
+--patrick:zeigeKarten()
+--
+--deckCards = getDeck(22)
+--print("amount of cards in the deck: "..#deckCards.cards)
+--drawnCard = deckCards:pop()
+--print("imgage: "..drawnCard.img)
+--print("amount of cards in the deck: "..#deckCards.cards)
+--drawnCard = deckCards:pop()
+--print("imgage: "..drawnCard.img)
+
+function displayHand()
+	local rotationHand = initRotationHand
+	for i = 1, 4 do
+		love.graphics.draw(images[i]  , handPosX[i], yButton, rotationHand, 1, 1, imageXcenter, imageYbutton)
+		rotationHand = rotationHand + rotationHandNeighborDifference
+	end
+end
+
 function shuffleTable(tbl)
     local randomIndex, tmp
     for currentIndex = #tbl, 2, -1 do
@@ -20,7 +102,7 @@ function loadCard(value)
 		return path
 	end
 	imgFile = getFileName(value)
-	img = "love.graphics.newImage("..imgFile..")"
+	img = love.graphics.newImage(imgFile)
 	return {
 		value = value,
 		img = img
@@ -73,25 +155,29 @@ function point(x, y)
 end
 
 function getFieldCardPositions()
-	imageNeighbourSpacing = 50
+	imageNeighbourSpacing = 10
 	numberOfCardsOnBoard = board:getNumberOfCardsOnBoard()
 	imageElementWidth = imageNeighbourSpacing + imageWidth
 	boxWidth = imageElementWidth * numberOfCardsOnBoard
 	startPosX = (screenWidth - boxWidth) / 2
-	middleTopY = (love.graphics.getHeight() / 2) + (love.graphics.getHeight() / 4)
+	print(screenWidth)
+	print("nrs: "..numberOfCardsOnBoard)
+	print("box: "..boxWidth)
+	print("imageElement: "..imageElementWidth)
+	print("startPosX: "..startPosX)
+	middleTopY = (love.graphics.getHeight() / 2) - (love.graphics.getHeight() / 4)
 	love.graphics.getHeight()		--
 	positions = {}
 	for i = 1, numberOfCardsOnBoard do
-		xPos = numberOfCardsOnBoard * imageElementWidth + startPosX
+		xPos = i * imageElementWidth + startPosX
 		positions[i] = point(xPos, middleTopY)
-		print("pos "..i..".x: "..positions[i].x)
 	end
 	return positions
 end
 
-
 function game_Field()
 	local cardsOnField = {}
+	local cardPositionsOnField = {}
 	return {
 		getNumberOfCardsOnBoard = function(self)
 			return #cardsOnField
@@ -103,23 +189,16 @@ function game_Field()
 		end,
 		putCardOnField = function(self, card)
 			table.insert(cardsOnField, card)
+			cardPositionsOnField = getFieldCardPositions()
 		end,
 		displayField = function(self)
 			if not (0 == #cardsOnField) then
 				for i = 1, #cardsOnField do
-					love.graphics.draw(cardsOnField[i], fieldPos[i].x, fieldPos[i].y, imageScaleX, imageScaleY)
+					love.graphics.draw(cardsOnField[i].img, cardPositionsOnField[i].x, cardPositionsOnField[i].y)
 				end
 			end
 		end
 	}
-
-end
-
-function displayField()
-	for i = 1, #players do
-		love.graphics.draw(images[i], handPosX[i], yButton, rotationHand, imageScaleX, imageScaleY, imageXcenter, imageYbutton)
-		rotationHand = rotationHand + rotationHandNeighborDifference
-	end
 end
 
 function loadImages()
@@ -142,98 +221,6 @@ function getXhandCards(distance)
 	end
 	return xPos
 end
-
-function getXfieldCards(distance)
-	-- fills an table of 4 elements and returns it
-	local xPos = {}
-	local yPos = {}
-	xPos[1] = -1 * (distance /2 + distance) + xScreenMiddle
-	for i = 2, 4 do
-		xPos[i] = xPos[i-1] + distance
-	end
-	return xPos
-end
-
-function love.load()
-	----------------- game settings  -----------------------------------------------------
-    	love.window.setMode(config.windowWidth, config.windowHeight, config.windowFlags)    --
-	--------------------------------------------------------------------------------------
-	----------------- image printing -----------------
-	initRotationHand = math.rad(-45)
-	rotationHandNeighborDifference = math.rad(30)
-	imageScaleX = 0.3
-	imageScaleY = imageScaleX
-	xScreenMiddle = love.graphics.getWidth() / 2	--
-	screenWidth = love.graphics.getWidth() 
-	yButton = love.graphics.getHeight()		--
-	images = {}					--
-	images = loadImages()				--
-	imageXcenter = images[1]:getWidth() / 2		--
-	imageYbutton = images[1]:getHeight()		--
-	imageWidth = images[1]:getWidth() 		--
-	imageHeight = images[1]:getHeight()		--
-	handPosX = getXhandCards(25)			--
-	fieldPosX = getXfieldCards(25)			--
-                                                        --
-	--------------------------------------------------
-	-------------------- game objects ----------------
-	deck = getDeck(22)				--
-        board = game_Field()                            --
-	players = {}                                    --
-        patrick = Spieler()                             --
-	table.insert(players, patrick)                  --
-                                                        --
-	--------------------------------------------------
-	testCard = {img="someImage", value=3}
-	board:putCardOnField(testCard)
-	board:putCardOnField(testCard)
-	board:putCardOnField(testCard)
-	board:putCardOnField(testCard)
-	board:putCardOnField(testCard)
-	--board:showCards()
-	--print(board:getNumberOfCardsOnBoard())
-	getFieldCardPositions()
-	
-end
-
-function love.update(dt)
-
-end
-
-function love.draw()
-	displayHand()
-end
-
---deck = getDeck(22)
---patrick = Spieler()
---
---print("patrick zieht eine karte")
---patrick:zieheKarte()
---print("patrick zieht eine karte")
---patrick:zieheKarte()
---print("patrick zeigt seine karten")
---patrick:zeigeKarten()
---print("patrick wirft seine letzte karte weg")
---patrick:werfeKarteWeg()
---print("patrick zeigt seine karten")
---patrick:zeigeKarten()
---
---deckCards = getDeck(22)
---print("amount of cards in the deck: "..#deckCards.cards)
---drawnCard = deckCards:pop()
---print("imgage: "..drawnCard.img)
---print("amount of cards in the deck: "..#deckCards.cards)
---drawnCard = deckCards:pop()
---print("imgage: "..drawnCard.img)
-
-function displayHand()
-	local rotationHand = initRotationHand
-	for i = 1, 4 do
-		love.graphics.draw(images[i], handPosX[i], yButton, rotationHand, imageScaleX, imageScaleY, imageXcenter, imageYbutton)
-		rotationHand = rotationHand + rotationHandNeighborDifference
-	end
-end
-
 
 function love.keypressed(key)
    if key == "escape" then

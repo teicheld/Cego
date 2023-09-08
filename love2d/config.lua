@@ -2,8 +2,8 @@
 
 -- Configuration settings
 local config = {
-    windowWidth = 1920,
-    windowHeight = 1080,
+    windowWidth = 1280,
+    windowHeight = 720,
     windowFlags = {
         resizable = false,
         vsync = true,
